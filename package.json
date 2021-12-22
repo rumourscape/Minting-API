@@ -21,6 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@blockfrost/blockfrost-js": "^3.0.2",
+    "@cardano-ogmios/client": "^5.0.0",
     "@emurgo/cardano-serialization-lib-nodejs": "^9.1.2",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",

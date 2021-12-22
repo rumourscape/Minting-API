@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { SerialController } from 'src/serial/serial.controller';
+import * as route from 'src/conrols/controller';
 
 @Module({
   imports: [],
-  controllers: [SerialController],
+  controllers: [route.Protocol, route.Script, route.SignTx],
 })
 export class AppModule {}
