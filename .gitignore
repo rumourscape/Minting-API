@@ -1,5 +1,7 @@
-#config file
+#config files
 src/env.json
+.eslintrc.js
+.prettierrc
 
 # compiled output
 /dist

@@ -71,8 +71,8 @@ export function getBaseAddress() {
 export function getScript() {
   const lock = Cardano.TimelockExpiry.new(45299919);
 	const nativeScripts = Cardano.NativeScripts.new();
-  const keyash = getBaseAddress().payment_cred().to_keyhash()
-	const script = Cardano.ScriptPubkey.new(keyash);
+  const keyhash = getBaseAddress().payment_cred().to_keyhash()
+	const script = Cardano.ScriptPubkey.new(keyhash);
 	const nativeScript = Cardano.NativeScript.new_script_pubkey(script);
 	const lockScript = Cardano.NativeScript.new_timelock_expiry(lock);
 
@@ -83,9 +83,9 @@ export function getScript() {
 		Cardano.ScriptAll.new(nativeScripts)
 	);
 
-	const scripthash = Cardano.ScriptHash.from_bytes( finalScript.hash(0).to_bytes() );
+	//const scripthash = Cardano.ScriptHash.from_bytes( finalScript.hash(0).to_bytes() );
 
-	const policyId = Buffer.from( scripthash.to_bytes() ).toString('hex');
+	const policyId = Buffer.from( finalScript.hash(0).to_bytes() ).toString('hex');
 	
   return {
     policyId : policyId,
@@ -97,8 +97,8 @@ export function getScript() {
 function Script() {
   const lock = Cardano.TimelockExpiry.new(45299919);
 	const nativeScripts = Cardano.NativeScripts.new();
-  const keyash = getBaseAddress().payment_cred().to_keyhash()
-	const script = Cardano.ScriptPubkey.new(keyash);
+  const keyhash = getBaseAddress().payment_cred().to_keyhash()
+	const script = Cardano.ScriptPubkey.new(keyhash);
 	const nativeScript = Cardano.NativeScript.new_script_pubkey(script);
 	const lockScript = Cardano.NativeScript.new_timelock_expiry(lock);
 
@@ -130,7 +130,7 @@ export function signTx(tx: string, witness: string) {
 */    
   const txhash = Cardano.hash_transaction(transaction.body());
 
-  const vkeyWit = Cardano.make_vkey_witness( txhash, prvkey)
+  const vkeyWit = Cardano.make_vkey_witness( txhash, prvkey )
   //console.log(vkeyWit.vkey().public_key().to_bech32())
 
   const script = Script()
@@ -139,7 +139,7 @@ export function signTx(tx: string, witness: string) {
   //addScripts.add(script);
   
   const addVkeys = addWitnesses.vkeys();
-  //const addScripts = addWitnesses.native_scripts();
+  const addScripts = addWitnesses.native_scripts();
 
   const totalVkeys = Cardano.Vkeywitnesses.new();
   const totalScripts = Cardano.NativeScripts.new();
@@ -159,13 +159,13 @@ export function signTx(tx: string, witness: string) {
       totalVkeys.add(addVkeys.get(i));
     }
   }
-/*  if (addScripts) {
+  if (addScripts) {
     for (let i = 0; i < addScripts.len(); i++) {
       totalScripts.add(addScripts.get(i));
     }
   }
-*/
-  const totalWitnesses = Cardano.TransactionWitnessSet.new();
+
+  const totalWitnesses = transaction.witness_set();
   totalWitnesses.set_vkeys(totalVkeys);
   totalWitnesses.set_native_scripts(totalScripts);
 
@@ -176,7 +176,7 @@ export function signTx(tx: string, witness: string) {
   );
 
   const signedTx_cborHex = Buffer.from(signedTx.to_bytes()).toString('hex')
-  //console.log(signedTx_cborHex)
+  console.log(signedTx_cborHex)
   return submitTx(signedTx_cborHex)
   //return { 'transaction' : signedTx_cborHex}
 }
