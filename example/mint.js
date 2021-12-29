@@ -321,40 +321,8 @@ async function mintTx(assets, metadata, policy, protocolParameters) {
   );
   finalTxBody.set_mint(mint);
   finalTxBody.set_auxiliary_data_hash(Loader.Cardano.hash_auxiliary_data(_metadata));
-/*
-  const paymentKeyHash = Loader.Cardano.BaseAddress.from_address(
-    Loader.Cardano.Address.from_bech32("addr_test1qz4u5gchd7lmk2ak5n7ptc6aqf9h8yt4w2ftytm9rvr33sg2xpgh0qx8vqjmmg04ksu94e8nu70598hghh29p64htm2qkkz96r")
-  ).payment_cred().to_keyhash();
-  
-  const addressKeyHash = Loader.Cardano.BaseAddress.from_address(
-    Loader.Cardano.Address.from_bytes(address)
-  ).payment_cred().to_keyhash();   
 
-  const signers = Loader.Cardano.Ed25519KeyHashes.new();
-  signers.add(paymentKeyHash);
-  signers.add(addressKeyHash);
-  finalTxBody.set_required_signers(signers);
-*/
-
-  //How do I sign this script?
-
-  /*
-  const txhash = Loader.Cardano.hash_transaction(finalTxBody)
-
-  const pkey = Loader.Cardano.PrivateKey.from_normal_bytes(
-    Loader.Cardano.StakeCredential.from_keyhash( paymentKeyHash ).to_bytes() )
-  console.log(pkey.to_bech32())
-
-  const vkeyWit = Loader.Cardano.make_vkey_witness( txhash, pkey)
-*/
   const finalWitnesses = Loader.Cardano.TransactionWitnessSet.new();
-/*  const scripts = Loader.Cardano.NativeScripts.new();
-  finalWitnesses.set_native_scripts(scripts);
-
-  const vkeys = Loader.Cardano.Vkeywitnesses.new();
-  //vkeys.add(vkeyWit)
-  finalWitnesses.set_vkeys(vkeys);
-*/
 
   const transaction = Loader.Cardano.Transaction.new(
     finalTxBody,

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import * as route from 'src/conrols/controller';
+import * as route from 'src/controller/controller';
 
 @Module({
   imports: [],
