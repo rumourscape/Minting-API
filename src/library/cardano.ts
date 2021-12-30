@@ -1,7 +1,6 @@
 import * as Cardano from '@emurgo/cardano-serialization-lib-nodejs';
 import { submitTx } from './ogmios';
 import { mnemonicToEntropy } from 'bip39';
-import { readFileSync } from 'fs';
 import { Buffer } from 'buffer';
 import env from 'src/env.json'
 
@@ -68,34 +67,8 @@ export function getBaseAddress() {
   return baseAddr
 }
 
-export function getScript() {
-  const lock = Cardano.TimelockExpiry.new(45299919);
-	const nativeScripts = Cardano.NativeScripts.new();
-  const keyhash = getBaseAddress().payment_cred().to_keyhash()
-	const script = Cardano.ScriptPubkey.new(keyhash);
-	const nativeScript = Cardano.NativeScript.new_script_pubkey(script);
-	const lockScript = Cardano.NativeScript.new_timelock_expiry(lock);
-
-	nativeScripts.add(nativeScript);
-	nativeScripts.add(lockScript);
-	
-	const finalScript = Cardano.NativeScript.new_script_all(
-		Cardano.ScriptAll.new(nativeScripts)
-	);
-
-	//const scripthash = Cardano.ScriptHash.from_bytes( finalScript.hash(0).to_bytes() );
-
-	const policyId = Buffer.from( finalScript.hash(0).to_bytes() ).toString('hex');
-	
-  return {
-    policyId : policyId,
-    script : Buffer.from(finalScript.to_bytes()).toString("hex"),
-  };
-	
-}
-
 function Script() {
-  const lock = Cardano.TimelockExpiry.new(45299919);
+  const lock = Cardano.TimelockExpiry.new(env.time_lock);
 	const nativeScripts = Cardano.NativeScripts.new();
   const keyhash = getBaseAddress().payment_cred().to_keyhash()
 	const script = Cardano.ScriptPubkey.new(keyhash);
@@ -111,6 +84,22 @@ function Script() {
 
   return finalScript
 }
+
+export function getScript() {
+	const finalScript = Script();
+
+	//const scripthash = Cardano.ScriptHash.from_bytes( finalScript.hash(0).to_bytes() );
+
+	const policyId = Buffer.from( finalScript.hash(0).to_bytes() ).toString('hex');
+	
+  return {
+    policyId : policyId,
+    script : Buffer.from(finalScript.to_bytes()).toString("hex"),
+    ttl : env.time_lock
+  };
+	
+}
+
 
 export function signTx(tx: string, witness: string) {
 

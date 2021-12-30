@@ -34,7 +34,7 @@ export async function getProtocolParameters() {
   return value;
 };
 
-async function createLockingPolicyScript(protocolParameters) {
+async function createLockingPolicyScript() {
 
   const rawresponse = await fetch('http://localhost:3000/getScript', {
     method: 'GET',
@@ -47,11 +47,13 @@ async function createLockingPolicyScript(protocolParameters) {
   
   const policyId = rawresponse["policyId"];
   const script = _Buffer.from(rawresponse["script"],"hex");
+  const ttl = rawresponse["ttl"];
+  //const pubhash = Loader.Cardano.Ed25519KeyHash.from_bytes(_Buffer.from(rawresponse["pubhash"],"hex"));
 
   const finalScript = Loader.Cardano.NativeScript.from_bytes(script);
 
   console.log(policyId);
-  return { id: policyId, script: finalScript };
+  return { id: policyId, script: finalScript, ttl: ttl };
 }
 
 async function submitTx(signedTx) {
@@ -157,7 +159,7 @@ const asciiToHex = (str) => {
   
 export async function MintTx(metadata) {
   const protocolParameters = await getProtocolParameters();
-  const policy = await createLockingPolicyScript(protocolParameters)
+  const policy = await createLockingPolicyScript()
 
   let name = metadata.name.slice(0,32)
 
@@ -232,7 +234,7 @@ async function mintTx(assets, metadata, policy, protocolParameters) {
     protocolParameters.linearFee.constant().to_str(),
     protocolParameters.maxTxSize.toString()
   );
-  const selection = await CoinSelection.randomImprove(utxos, _outputs, 20);
+  const selection = CoinSelection.randomImprove(utxos, _outputs, 20);
   const nativeScripts = Loader.Cardano.NativeScripts.new();
   nativeScripts.add(policy.script);
   const mintedAssets = Loader.Cardano.Assets.new();
@@ -318,6 +320,7 @@ async function mintTx(assets, metadata, policy, protocolParameters) {
     inputs,
     outputs,
     minFee,
+    policy.ttl
   );
   finalTxBody.set_mint(mint);
   finalTxBody.set_auxiliary_data_hash(Loader.Cardano.hash_auxiliary_data(_metadata));
