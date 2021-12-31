@@ -1,5 +1,5 @@
 import * as Cardano from '@emurgo/cardano-serialization-lib-nodejs';
-import { submitTx } from './ogmios';
+import { submitTx } from './blockfrost';
 import { mnemonicToEntropy } from 'bip39';
 import { Buffer } from 'buffer';
 import env from 'src/env.json'
@@ -43,7 +43,7 @@ const rootkey = getCip1852Account();
 const prvkey = rootkey.to_raw_key();
 const pubkey = prvkey.to_public();
 const pubhash = pubkey.hash();
-console.log(pubkey.to_bech32())
+//console.log(pubkey.to_bech32())
 
 export function getBaseAddress() {
   const cip1852Account = getCip1852Account();
@@ -102,10 +102,34 @@ export function getScript() {
 }
 
 
-export function signTx(tx: string, witness: string) {
+export async function signTx(tx: string, witness: string) {
 
   const transaction = Cardano.Transaction.from_bytes(Buffer.from(tx, 'hex'))
   
+  const body = transaction.body()
+  const outputs = body.outputs()
+  const metadata = transaction.auxiliary_data()
+  const script = metadata.native_scripts().get(0)
+
+  let check = 0
+
+  for (let i = 0; i < outputs.len(); i++) {
+    let address = outputs.get(i).address().to_bech32()
+    //console.log(address)
+    if ( address === 
+      "addr_test1qz4u5gchd7lmk2ak5n7ptc6aqf9h8yt4w2ftytm9rvr33sg2xpgh0qx8vqjmmg04ksu94e8nu70598hghh29p64htm2qkkz96r")
+      {
+        check = 1;
+        break;
+      }
+      
+  }
+
+  if(check == 0) {
+    console.error("Output is invalid")
+    return {"error": "Output is invalid"}
+  } 
+
   //const txWitnesses = Cardano.TransactionWitnessSet;
   const txVkeys = Cardano.Vkeywitnesses.new();
   const txScripts = Cardano.NativeScripts.new();
@@ -113,17 +137,12 @@ export function signTx(tx: string, witness: string) {
   const addWitnesses = Cardano.TransactionWitnessSet.from_bytes(
       Buffer.from( witness, "hex")
   );
-/*
-  const signers = Cardano.Ed25519KeyHashes.new();
-  signers.add(pubhash);
-  transaction.body().set_required_signers(signers);
-*/    
+ 
   const txhash = Cardano.hash_transaction(transaction.body());
 
   const vkeyWit = Cardano.make_vkey_witness( txhash, prvkey )
-  //console.log(vkeyWit.vkey().public_key().to_bech32())
 
-  const script = Script()
+  //const script = Script()
   txScripts.add(script)
   txVkeys.add(vkeyWit);
   //addScripts.add(script);
@@ -166,7 +185,8 @@ export function signTx(tx: string, witness: string) {
   );
 
   const signedTx_cborHex = Buffer.from(signedTx.to_bytes()).toString('hex')
-  console.log(signedTx_cborHex)
-  //return submitTx(signedTx_cborHex)
-  return { 'transaction' : signedTx_cborHex}
+  //console.log(signedTx_cborHex)
+  const tx_hash = await submitTx(signedTx_cborHex)
+  console.log(tx_hash)
+  return { 'hash' : tx_hash}
 }

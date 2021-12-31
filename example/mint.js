@@ -55,7 +55,7 @@ async function createLockingPolicyScript() {
   console.log(policyId);
   return { id: policyId, script: finalScript, ttl: ttl };
 }
-
+/*
 async function submitTx(signedTx) {
   const tx = signedTx
   console.log(tx);
@@ -63,7 +63,7 @@ async function submitTx(signedTx) {
   const txHash = await window.cardano.submitTx( tx );
   return txHash;
 }
-
+*/
 async function signTx(transaction) {
     //await Loader.load();
     const raw = _Buffer.from(transaction.to_bytes()).toString("hex");
@@ -83,10 +83,10 @@ async function signTx(transaction) {
       body: JSON.stringify({ transaction: raw, witness: witness })
     }).then((response) => response.json())
     
-    const signedTx = rawresponse["transaction"];
+    const tx_hash = rawresponse["hash"];
 
-    console.log(signedTx);
-    return signedTx;
+    console.log(tx_hash);
+    return tx_hash;
 }
 
 const assetsCount = async (multiAssets) => {
@@ -177,9 +177,9 @@ export async function MintTx(metadata) {
 
     const transaction = await mintTx(assets,METADATA,policy,protocolParameters)
     console.log(transaction)
-    const signedTx = await signTx(transaction)
+    const txHash = await signTx(transaction)
     //console.log(signedTx)
-    const txHash = await submitTx(signedTx);
+    //const txHash = await submitTx(signedTx);
     return txHash;
     } catch (error) {
       console.log(error)

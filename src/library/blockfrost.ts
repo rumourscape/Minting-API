@@ -10,3 +10,7 @@ export async function getProtocolParams() {
   const protocol = await API.epochsParameters(epoch);
   return protocol;
 }
+
+export async function submitTx(transaction: string) {
+  return await API.txSubmit(transaction)
+}
