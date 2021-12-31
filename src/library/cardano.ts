@@ -70,7 +70,8 @@ export function getBaseAddress() {
 function Script() {
   const lock = Cardano.TimelockExpiry.new(env.time_lock);
 	const nativeScripts = Cardano.NativeScripts.new();
-  const keyhash = getBaseAddress().payment_cred().to_keyhash()
+  //const keyhash = getBaseAddress().payment_cred().to_keyhash()
+  const keyhash = pubhash
 	const script = Cardano.ScriptPubkey.new(keyhash);
 	const nativeScript = Cardano.NativeScript.new_script_pubkey(script);
 	const lockScript = Cardano.NativeScript.new_timelock_expiry(lock);
@@ -166,6 +167,6 @@ export function signTx(tx: string, witness: string) {
 
   const signedTx_cborHex = Buffer.from(signedTx.to_bytes()).toString('hex')
   console.log(signedTx_cborHex)
-  return submitTx(signedTx_cborHex)
-  //return { 'transaction' : signedTx_cborHex}
+  //return submitTx(signedTx_cborHex)
+  return { 'transaction' : signedTx_cborHex}
 }
