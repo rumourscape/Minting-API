@@ -25,25 +25,27 @@ enum ChainDerivation {
   CHIMERIC = 2, // from CIP1852
 }
 
-function getCip1852Account(): Cardano.Bip32PrivateKey {
+function getBip32PrivateKey(): Cardano.Bip32PrivateKey {
   const entropy = mnemonicToEntropy(env.phrase);
 
-  const rootKey = Cardano.Bip32PrivateKey.from_bip39_entropy(
+  return Cardano.Bip32PrivateKey.from_bip39_entropy(
     Buffer.from(entropy, 'hex'),
     Buffer.from(''),
   );
-  return rootKey
+}
+
+function getCip1852Account(): Cardano.Bip32PrivateKey {
+  return getBip32PrivateKey()
     .derive(harden(Purpose.CIP1852))
     .derive(harden(CoinTypes.CARDANO))
     .derive(harden(0)); // account #0
 }
 
 //Keys
-const rootkey = getCip1852Account();
-const prvkey = rootkey.to_raw_key();
-const pubkey = prvkey.to_public();
+const rootAccount = getCip1852Account();
+const prvkey = rootAccount.derive(0).derive(0).to_raw_key();
+const pubkey = getBip32PrivateKey().to_public().to_raw_key();
 const pubhash = pubkey.hash();
-console.log(pubkey.to_bech32())
 
 export function getBaseAddress() {
   const cip1852Account = getCip1852Account();
